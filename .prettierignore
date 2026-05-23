@@ -1,0 +1,14 @@
+node_modules
+dist
+build
+.next
+.turbo
+coverage
+pnpm-lock.yaml
+.pnpm-store
+.next/
+.husky/_/
+
+# user-owned docs (do not reformat)
+build-plan.md
+
