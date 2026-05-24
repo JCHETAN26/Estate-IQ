@@ -1,9 +1,11 @@
 /**
  * Rental estimate service tests.
  *
- * Skips the live RentCast call (skipLive: true) and the DB cache
- * (skipCache: true) so the service falls through to the fixture branch.
- * Also skips persistence so we don't need a running Postgres in CI.
+ * The strategy chain is: cache -> Zestimate -> RentCast -> HUD FMR -> fixtures.
+ *
+ * Most tests skip the live calls (RentCast, Zestimate) so they can
+ * pin a specific tier. The HUD FMR tier is enabled by default because
+ * it has zero side effects and gets ~35k US zip codes.
  */
 
 import { describe, expect, it } from "vitest";
@@ -28,23 +30,25 @@ const unfamiliarAddressInKnownZip: Property = {
   sourceUrl: "https://www.zillow.com/homedetails/unknown-address/9_zpid/",
   address: "999 Unknown St",
   bedrooms: 4,
-  zipCode: "78704", // we have market averages for this zip
+  zipCode: "78704", // we have HUD + fixtures market average for this zip
 };
 
-const totallyUnknown: Property = {
+const offGridZip: Property = {
   ...sampleProperty,
   sourceUrl: "https://www.zillow.com/homedetails/elsewhere/8_zpid/",
   address: "1 Far Away Pl",
-  state: "CA",
-  zipCode: "90001",
+  state: "ZZ",
+  zipCode: "00000", // not in HUD data, not in fixtures
 };
 
-describe("estimateRental — fixture fallback", () => {
+describe("estimateRental — fixture fallback (HUD disabled)", () => {
   it("returns the recorded fixture when the address matches", async () => {
     const outcome = await estimateRental(sampleProperty, {
       skipLive: true,
       skipCache: true,
       skipPersist: true,
+      skipZestimate: true,
+      skipHudFmr: true,
     });
     expect(outcome.ok).toBe(true);
     if (!outcome.ok) return;
@@ -60,11 +64,12 @@ describe("estimateRental — fixture fallback", () => {
       skipLive: true,
       skipCache: true,
       skipPersist: true,
+      skipZestimate: true,
+      skipHudFmr: true,
     });
     expect(outcome.ok).toBe(true);
     if (!outcome.ok) return;
-    // 78704 median is 3500 baseline (3-bed); this is a 4-bed so +12%.
-    // 3500 * 1.12 = 3920, rounded.
+    // 78704 fixture median is 3500 baseline (3-bed); 4-bed +12% = 3920.
     expect(outcome.estimate.estimatedRent).toBeCloseTo(3920, 0);
     expect(outcome.estimate.comparables).toEqual([]);
     expect(outcome.estimate.source).toBe("MOCK");
@@ -75,6 +80,8 @@ describe("estimateRental — fixture fallback", () => {
       skipLive: true,
       skipCache: true,
       skipPersist: true,
+      skipZestimate: true,
+      skipHudFmr: true,
     });
     expect(outcome.ok).toBe(true);
     if (!outcome.ok) return;
@@ -85,14 +92,33 @@ describe("estimateRental — fixture fallback", () => {
     expect(yields?.meetsOnePercentRule).toBe(false);
   });
 
-  it("returns a structured failure when neither fixture nor market average matches", async () => {
-    const outcome = await estimateRental(totallyUnknown, {
+  it("returns a structured failure when no provider produces an estimate", async () => {
+    const outcome = await estimateRental(offGridZip, {
       skipLive: true,
       skipCache: true,
       skipPersist: true,
+      skipZestimate: true,
+      // HUD has no entry for ZIP 00000.
     });
     expect(outcome.ok).toBe(false);
     if (outcome.ok) return;
     expect(outcome.reason).toBe("no_estimate_available");
+  });
+});
+
+describe("estimateRental — HUD FMR provider", () => {
+  it("returns a HUD FMR rent for a known US zip when no other provider runs", async () => {
+    const outcome = await estimateRental(sampleProperty, {
+      skipLive: true,
+      skipCache: true,
+      skipPersist: true,
+      skipZestimate: true,
+      // HUD enabled (default).
+    });
+    expect(outcome.ok).toBe(true);
+    if (!outcome.ok) return;
+    expect(outcome.estimate.source).toBe("HUD_FMR");
+    expect(outcome.estimate.estimatedRent).toBeGreaterThan(2000);
+    expect(outcome.estimate.estimatedRent).toBeLessThan(5000);
   });
 });
