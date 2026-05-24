@@ -1,0 +1,192 @@
+// EstateIQ — Prisma schema
+//
+// Models the core domain for property underwriting: a Property, the
+// Analysis runs performed against it, RentalEstimates produced from
+// market data, AI-generated InvestmentMemos, and the User who owns them.
+//
+// Schema is intentionally narrow for MVP. Phase 2 will populate computed
+// financial metric columns; Phase 3 will populate InvestmentMemo content.
+//
+// Convention: TS fields are camelCase, Postgres columns are snake_case
+// (via @map), table names are snake_case (via @@map).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Users
+// ---------------------------------------------------------------------------
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  properties Property[]
+  analyses   Analysis[]
+  memos      InvestmentMemo[]
+
+  @@map("users")
+}
+
+// ---------------------------------------------------------------------------
+// Properties
+// ---------------------------------------------------------------------------
+
+enum PropertyType {
+  SINGLE_FAMILY
+  MULTI_FAMILY
+  CONDO
+  TOWNHOUSE
+  APARTMENT
+  OTHER
+}
+
+model Property {
+  id              String       @id @default(cuid())
+  sourceUrl       String       @unique @map("source_url")
+  address         String
+  city            String
+  state           String
+  zipCode         String       @map("zip_code")
+  listPrice       Decimal      @map("list_price") @db.Decimal(12, 2)
+  bedrooms        Int
+  bathrooms       Decimal      @db.Decimal(4, 2)
+  squareFeet      Int?         @map("square_feet")
+  lotSizeSqft     Int?         @map("lot_size_sqft")
+  yearBuilt       Int?         @map("year_built")
+  propertyType    PropertyType @default(SINGLE_FAMILY) @map("property_type")
+  hoaMonthly      Decimal?     @map("hoa_monthly") @db.Decimal(10, 2)
+  taxesAnnual     Decimal?     @map("taxes_annual") @db.Decimal(12, 2)
+  insuranceAnnual Decimal?     @map("insurance_annual") @db.Decimal(12, 2)
+  description     String?      @db.Text
+  rawListing      Json?        @map("raw_listing")
+
+  ownerId String? @map("owner_id")
+  owner   User?   @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+
+  analyses        Analysis[]
+  rentalEstimates RentalEstimate[]
+  memos           InvestmentMemo[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([ownerId])
+  @@index([city, state])
+  @@map("properties")
+}
+
+// ---------------------------------------------------------------------------
+// Analyses (an underwriting run against a Property)
+// ---------------------------------------------------------------------------
+
+enum AnalysisStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+model Analysis {
+  id     String         @id @default(cuid())
+  status AnalysisStatus @default(PENDING)
+
+  // Inputs (financing assumptions). Real outputs land in Phase 2.
+  downPaymentPct  Decimal @default(20.00) @map("down_payment_pct") @db.Decimal(5, 2)
+  interestRatePct Decimal @default(7.00) @map("interest_rate_pct") @db.Decimal(5, 2)
+  loanTermYears   Int     @default(30) @map("loan_term_years")
+
+  // Computed metrics — null until the analysis completes (Phase 2).
+  monthlyPayment     Decimal? @map("monthly_payment") @db.Decimal(12, 2)
+  monthlyCashFlow    Decimal? @map("monthly_cash_flow") @db.Decimal(12, 2)
+  netOperatingIncome Decimal? @map("net_operating_income") @db.Decimal(12, 2)
+  capRatePct         Decimal? @map("cap_rate_pct") @db.Decimal(6, 3)
+  cashOnCashPct      Decimal? @map("cash_on_cash_pct") @db.Decimal(6, 3)
+  investmentScore    Int?     @map("investment_score")
+  scoreRationale     String?  @map("score_rationale") @db.Text
+
+  errorMessage String? @map("error_message") @db.Text
+
+  propertyId String   @map("property_id")
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  ownerId String? @map("owner_id")
+  owner   User?   @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+
+  memo InvestmentMemo?
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  completedAt DateTime? @map("completed_at")
+
+  @@index([propertyId])
+  @@index([ownerId])
+  @@index([status])
+  @@map("analyses")
+}
+
+// ---------------------------------------------------------------------------
+// Rental Estimates
+// ---------------------------------------------------------------------------
+
+enum RentalSource {
+  RENTCAST
+  ATTOM
+  ZILLOW
+  MANUAL
+  MOCK
+}
+
+model RentalEstimate {
+  id               String       @id @default(cuid())
+  source           RentalSource
+  estimatedRent    Decimal      @map("estimated_rent") @db.Decimal(10, 2)
+  rentLow          Decimal?     @map("rent_low") @db.Decimal(10, 2)
+  rentHigh         Decimal?     @map("rent_high") @db.Decimal(10, 2)
+  occupancyRatePct Decimal?     @map("occupancy_rate_pct") @db.Decimal(5, 2)
+  comparables      Json?
+
+  propertyId String   @map("property_id")
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([propertyId])
+  @@index([source])
+  @@map("rental_estimates")
+}
+
+// ---------------------------------------------------------------------------
+// Investment Memos (LLM output — Phase 3)
+// ---------------------------------------------------------------------------
+
+model InvestmentMemo {
+  id            String  @id @default(cuid())
+  content       String  @db.Text
+  model         String?
+  promptVersion String? @map("prompt_version")
+
+  propertyId String   @map("property_id")
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  analysisId String?   @unique @map("analysis_id")
+  analysis   Analysis? @relation(fields: [analysisId], references: [id], onDelete: SetNull)
+
+  ownerId String? @map("owner_id")
+  owner   User?   @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([propertyId])
+  @@index([ownerId])
+  @@map("investment_memos")
+}

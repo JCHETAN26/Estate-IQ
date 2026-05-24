@@ -33,3 +33,6 @@ yarn-error.log*
 # misc
 *.tsbuildinfo
 .eslintcache
+
+# prisma — generated client lives in node_modules; nothing extra to ignore
+
