@@ -25,3 +25,10 @@ export {
 export { calculateExpenses, type ExpenseInputs, type ExpenseBreakdown } from "./expenses.js";
 
 export { calculateCashFlow, type CashFlowInputs, type CashFlowResult } from "./cashflow.js";
+
+export {
+  analyzeAirbnb,
+  type AirbnbInputs,
+  type AirbnbAnalysis,
+  type StrRiskLevel,
+} from "./airbnb.js";

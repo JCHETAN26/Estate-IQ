@@ -9,6 +9,7 @@ import "./tools/parse-listing.js";
 import "./tools/estimate-mortgage.js";
 import "./tools/calculate-cash-flow.js";
 import "./tools/estimate-rental.js";
+import "./tools/analyze-airbnb.js";
 import "./tools/generate-investment-summary.js";
 
 export { registry } from "./registry.js";

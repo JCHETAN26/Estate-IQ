@@ -111,6 +111,73 @@ export const EstimateRentalOutputSchema = z.discriminatedUnion("status", [
 export type EstimateRentalOutput = z.infer<typeof EstimateRentalOutputSchema>;
 
 // ---------------------------------------------------------------------------
+// analyze_airbnb
+// ---------------------------------------------------------------------------
+
+export const AirbnbInputOverridesSchema = z
+  .object({
+    averageDailyRate: z.number().positive().optional(),
+    occupancyRatePct: z.number().min(0).max(100).optional(),
+    cleaningFeePerBooking: z.number().nonnegative().optional(),
+    cleaningFeePassedThrough: z.boolean().optional(),
+    averageStayNights: z.number().positive().optional(),
+    managementFeePct: z.number().min(0).max(100).optional(),
+    furnishingCost: z.number().nonnegative().optional(),
+    monthlyFixedCarryingCost: z.number().nonnegative().optional(),
+    peakMonth: z.number().int().min(1).max(12).optional(),
+    seasonalityAmplitude: z.number().min(0).max(1).optional(),
+  })
+  .strict();
+export type AirbnbInputOverrides = z.infer<typeof AirbnbInputOverridesSchema>;
+
+export const AnalyzeAirbnbInputSchema = z.object({
+  property: PropertySchema,
+  overrides: AirbnbInputOverridesSchema.optional(),
+});
+export type AnalyzeAirbnbInput = z.infer<typeof AnalyzeAirbnbInputSchema>;
+
+const StrRiskLevelSchema = z.enum(["Low", "Moderate", "High"]);
+const AirbnbAnalysisOutputDataSchema = z.object({
+  inputs: z.object({
+    averageDailyRate: z.number(),
+    occupancyRatePct: z.number(),
+    cleaningFeePerBooking: z.number(),
+    cleaningFeePassedThrough: z.boolean(),
+    averageStayNights: z.number(),
+    managementFeePct: z.number(),
+    furnishingCost: z.number(),
+    monthlyFixedCarryingCost: z.number(),
+    peakMonth: z.number(),
+    seasonalityAmplitude: z.number(),
+  }),
+  adr: z.number(),
+  occupancyRate: z.number(),
+  bookedNightsPerYear: z.number(),
+  bookingsPerYear: z.number(),
+  grossRevenueAnnual: z.number(),
+  cleaningCostAnnual: z.number(),
+  managementCostAnnual: z.number(),
+  furnishingAmortizedAnnual: z.number(),
+  projectedAnnualRevenue: z.number(),
+  projectedAnnualNetCashFlow: z.number(),
+  breakEvenMonths: z.number().nullable(),
+  strRiskLevel: StrRiskLevelSchema,
+  riskFactors: z.array(z.string()),
+  seasonalityFactors: z.array(z.number()).length(12),
+  monthlyRevenueProjection: z.array(z.number()).length(12),
+});
+
+export const AnalyzeAirbnbOutputSchema = z.discriminatedUnion("status", [
+  z.object({
+    status: z.literal("ok"),
+    source: z.enum(["AIRDNA", "MARKET_RULES"]),
+    analysis: AirbnbAnalysisOutputDataSchema,
+  }),
+  NotImplementedSchema,
+]);
+export type AnalyzeAirbnbOutput = z.infer<typeof AnalyzeAirbnbOutputSchema>;
+
+// ---------------------------------------------------------------------------
 // generate_investment_summary
 // ---------------------------------------------------------------------------
 
@@ -148,6 +215,7 @@ export const MCP_TOOL_NAMES = [
   "estimate_mortgage",
   "calculate_cash_flow",
   "estimate_rental",
+  "analyze_airbnb",
   "generate_investment_summary",
 ] as const;
 
