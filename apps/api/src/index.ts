@@ -2,10 +2,14 @@
  * EstateIQ API entrypoint.
  *
  * Phase 1 ships:
- *   - GET /health           liveness probe
- *   - GET /health/db        DB connectivity probe (counts properties)
+ *   - GET  /health                  liveness probe
+ *   - GET  /health/db               DB connectivity probe (counts properties)
+ *   - GET  /mcp/tools               list registered MCP tools
+ *   - POST /mcp/tools/:name         invoke a tool with a JSON body
  *
- * The MCP server, tool registry, and routing layer land in Task 1.2.
+ * The same tool registry is also exposed over MCP-native stdio (see
+ * apps/api/src/mcp-stdio.ts) so a tool registered once is callable from
+ * either transport.
  */
 
 import "./env.js";
@@ -13,6 +17,10 @@ import { createServer } from "node:http";
 import { describeStack } from "@estate-iq/analysis-engine";
 import { SHARED_PACKAGE_NAME } from "@estate-iq/shared";
 import { prisma } from "./db/client.js";
+import { handleMcpHttpRequest } from "./mcp/transport/http.js";
+import { logger } from "./mcp/logger.js";
+// Importing the mcp barrel triggers tool self-registration.
+import "./mcp/index.js";
 
 const PORT = Number.parseInt(process.env.PORT ?? "4000", 10);
 
@@ -57,16 +65,18 @@ const server = createServer(async (req, res) => {
     return;
   }
 
+  if (await handleMcpHttpRequest(req, res)) return;
+
   res.writeHead(404, { "Content-Type": "application/json" });
   res.end(JSON.stringify({ error: "Not Found" }));
 });
 
 server.listen(PORT, () => {
-  console.info(`[estate-iq-api] listening on http://localhost:${PORT}`);
+  logger.info("api.listening", { port: PORT });
 });
 
 const shutdown = async (signal: string) => {
-  console.info(`[estate-iq-api] received ${signal}, shutting down...`);
+  logger.info("api.shutdown", { signal });
   server.close();
   await prisma.$disconnect();
   process.exit(0);
