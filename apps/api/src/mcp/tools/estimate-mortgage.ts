@@ -1,27 +1,55 @@
 /**
  * MCP tool: estimate_mortgage
  *
- * Input:  Financing assumptions (price, down payment, rate, term, taxes, etc.)
- * Output: Monthly payment breakdown.
- *
- * Phase 1 returns a not_implemented marker. Real calculation lands in
- * Phase 2 / Task 2.1 inside packages/analysis-engine.
+ * Wraps @estate-iq/analysis-engine.calculateMortgage and rolls in the
+ * tax/insurance/HOA line items so callers get a single PITI figure.
  */
 
+import { calculateExpenses, calculateMortgage } from "@estate-iq/analysis-engine";
 import { EstimateMortgageInputSchema, EstimateMortgageOutputSchema } from "@estate-iq/shared";
 import { defineTool } from "../registry.js";
 
 export const estimateMortgageTool = defineTool({
   name: "estimate_mortgage",
   description:
-    "Estimate the monthly mortgage payment given financing assumptions (PITI + HOA). Returns a deterministic breakdown.",
+    "Estimate the monthly mortgage payment given financing assumptions (PITI + HOA + PMI). Returns a deterministic breakdown.",
   inputSchema: EstimateMortgageInputSchema,
   outputSchema: EstimateMortgageOutputSchema,
-  async handler() {
+  async handler(input) {
+    const mortgage = calculateMortgage({
+      listPrice: input.listPrice,
+      downPaymentPct: input.downPaymentPct,
+      interestRatePct: input.interestRatePct,
+      loanTermYears: input.loanTermYears,
+    });
+    const expenses = calculateExpenses({
+      mortgage,
+      propertyTaxAnnual: input.propertyTaxAnnual,
+      insuranceAnnual: input.insuranceAnnual,
+      hoaMonthly: input.hoaMonthly,
+      // Operating reserves are a cash-flow concept; not relevant here.
+      monthlyRent: 0,
+      vacancyPctOfRent: 0,
+      maintenancePctOfRent: 0,
+      managementPctOfRent: 0,
+    });
+
     return {
-      status: "not_implemented" as const,
-      deferredTo: "Phase 2 / Task 2.1 — Mortgage & Expense Engine",
-      message: "Calculation framework wired; numeric implementation lands in Phase 2.",
+      status: "ok" as const,
+      loanAmount: mortgage.loanAmount,
+      downPayment: mortgage.downPayment,
+      ltv: round3(mortgage.ltv),
+      monthlyPrincipalAndInterest: mortgage.monthlyPrincipalAndInterest,
+      monthlyTaxes: expenses.monthlyTaxes,
+      monthlyInsurance: expenses.monthlyInsurance,
+      monthlyHoa: expenses.monthlyHoa,
+      monthlyPmi: mortgage.pmiMonthly,
+      monthlyPaymentTotal: expenses.monthlyFixedTotal,
+      totalInterestOverTerm: mortgage.totalInterestOverTerm,
     };
   },
 });
+
+function round3(value: number): number {
+  return Math.round(value * 1000) / 1000;
+}

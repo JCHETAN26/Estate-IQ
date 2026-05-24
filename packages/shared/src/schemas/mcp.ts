@@ -48,11 +48,16 @@ export type EstimateMortgageInput = z.infer<typeof EstimateMortgageInputSchema>;
 
 const MortgageMetricsSchema = z.object({
   status: z.literal("ok"),
-  monthlyPrincipalAndInterest: z.number(),
-  monthlyTaxesAndInsurance: z.number(),
-  monthlyHoa: z.number(),
-  monthlyPaymentTotal: z.number(),
   loanAmount: z.number(),
+  downPayment: z.number(),
+  ltv: z.number(),
+  monthlyPrincipalAndInterest: z.number(),
+  monthlyTaxes: z.number(),
+  monthlyInsurance: z.number(),
+  monthlyHoa: z.number(),
+  monthlyPmi: z.number(),
+  /** PITI + HOA + PMI rolled into one figure. */
+  monthlyPaymentTotal: z.number(),
   totalInterestOverTerm: z.number(),
 });
 export const EstimateMortgageOutputSchema = z.discriminatedUnion("status", [
@@ -73,7 +78,11 @@ export type CalculateCashFlowInput = z.infer<typeof CalculateCashFlowInputSchema
 
 const CashFlowMetricsSchema = z.object({
   status: z.literal("ok"),
+  cashInvested: z.number(),
+  monthlyPaymentPITI: z.number(),
+  monthlyEffectiveRent: z.number(),
   monthlyCashFlow: z.number(),
+  annualCashFlow: z.number(),
   netOperatingIncome: z.number(),
   capRatePct: z.number(),
   cashOnCashPct: z.number(),
