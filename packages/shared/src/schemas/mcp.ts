@@ -13,6 +13,7 @@
 import { z } from "zod";
 import { PropertySchema } from "./property.js";
 import { FinancingAssumptionsSchema, RentalAssumptionsSchema } from "./financing.js";
+import { RentalEstimateSchema } from "./rental.js";
 
 // Discriminated union helper for "we shipped the framework but the
 // concrete numeric implementation lands in a later phase". Using this
@@ -94,6 +95,22 @@ export const CalculateCashFlowOutputSchema = z.discriminatedUnion("status", [
 export type CalculateCashFlowOutput = z.infer<typeof CalculateCashFlowOutputSchema>;
 
 // ---------------------------------------------------------------------------
+// estimate_rental
+// ---------------------------------------------------------------------------
+
+export const EstimateRentalInputSchema = PropertySchema;
+export type EstimateRentalInput = z.infer<typeof EstimateRentalInputSchema>;
+
+export const EstimateRentalOutputSchema = z.discriminatedUnion("status", [
+  z.object({
+    status: z.literal("ok"),
+    estimate: RentalEstimateSchema,
+  }),
+  NotImplementedSchema,
+]);
+export type EstimateRentalOutput = z.infer<typeof EstimateRentalOutputSchema>;
+
+// ---------------------------------------------------------------------------
 // generate_investment_summary
 // ---------------------------------------------------------------------------
 
@@ -130,6 +147,7 @@ export const MCP_TOOL_NAMES = [
   "parse_listing",
   "estimate_mortgage",
   "calculate_cash_flow",
+  "estimate_rental",
   "generate_investment_summary",
 ] as const;
 

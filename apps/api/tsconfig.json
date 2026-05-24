@@ -8,7 +8,7 @@
     "types": ["node"],
     "resolveJsonModule": true
   },
-  "include": ["src/**/*", "scripts/**/*"],
+  "include": ["src/**/*", "scripts/**/*", "test/**/*"],
   "exclude": ["dist", "node_modules"],
   "references": [{ "path": "../../packages/shared" }, { "path": "../../packages/analysis-engine" }]
 }
