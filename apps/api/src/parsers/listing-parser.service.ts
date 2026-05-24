@@ -40,7 +40,7 @@ export type ServiceResult =
       }>;
     };
 
-async function persist(property: Property): Promise<void> {
+async function persist(property: Property, rawListing?: unknown): Promise<void> {
   try {
     await prisma.property.upsert({
       where: { sourceUrl: property.sourceUrl },
@@ -62,6 +62,7 @@ async function persist(property: Property): Promise<void> {
           ? { insuranceAnnual: property.insuranceAnnual }
           : {}),
         ...(property.description !== undefined ? { description: property.description } : {}),
+        ...(rawListing !== undefined ? { rawListing: rawListing as object } : {}),
       },
       create: {
         sourceUrl: property.sourceUrl,
@@ -82,6 +83,7 @@ async function persist(property: Property): Promise<void> {
           ? { insuranceAnnual: property.insuranceAnnual }
           : {}),
         ...(property.description !== undefined ? { description: property.description } : {}),
+        ...(rawListing !== undefined ? { rawListing: rawListing as object } : {}),
       },
     });
   } catch (error) {
@@ -131,7 +133,7 @@ export async function parseListing(
       });
       // Don't re-persist a cache hit (it's already in the DB).
       if (result.source !== "cache" && !options.skipPersist) {
-        await persist(result.property);
+        await persist(result.property, result.rawListing);
       }
       return result;
     }

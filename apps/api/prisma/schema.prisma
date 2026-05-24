@@ -141,7 +141,9 @@ model Analysis {
 enum RentalSource {
   RENTCAST
   ATTOM
+  ZILLOW_ZESTIMATE
   ZILLOW
+  HUD_FMR
   MANUAL
   MOCK
 }

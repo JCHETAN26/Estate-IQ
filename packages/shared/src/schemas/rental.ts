@@ -8,7 +8,15 @@
 
 import { z } from "zod";
 
-export const RentalSourceSchema = z.enum(["RENTCAST", "ATTOM", "ZILLOW", "MANUAL", "MOCK"]);
+export const RentalSourceSchema = z.enum([
+  "RENTCAST",
+  "ATTOM",
+  "ZILLOW_ZESTIMATE",
+  "ZILLOW",
+  "HUD_FMR",
+  "MANUAL",
+  "MOCK",
+]);
 export type RentalSource = z.infer<typeof RentalSourceSchema>;
 
 export const ComparableRentalSchema = z.object({

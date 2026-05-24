@@ -15,6 +15,10 @@ export type ParseSuccess = {
   source: ParseSource;
   property: Property;
   durationMs: number;
+  /** Raw upstream payload (e.g. Zillow's __NEXT_DATA__). Used by
+   *  downstream services (rent Zestimate extraction, AVM lookups)
+   *  that want richer data than the normalized Property carries. */
+  rawListing?: unknown;
 };
 
 export type ParseFailure = {

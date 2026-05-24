@@ -22,12 +22,14 @@ import {
   type RentalSource,
 } from "@estate-iq/shared";
 import { prisma } from "../db/client.js";
+import { getHudFairMarketRent } from "../integrations/hud-fmr/provider.js";
 import {
   getRentEstimate,
   mapPropertyType,
   type RentEstimateResult,
 } from "../integrations/rentcast/client.js";
 import type { RentcastRentEstimate } from "../integrations/rentcast/types.js";
+import { extractRentZestimateFromNextData } from "../integrations/zillow/zestimate-extractor.js";
 import { logger } from "../mcp/logger.js";
 import { computeYieldMetrics } from "./yield.js";
 
@@ -63,6 +65,10 @@ export type RentalEstimateOptions = {
   skipCache?: boolean;
   /** Skip persistence (tests). */
   skipPersist?: boolean;
+  /** Skip the cached-Zestimate provider. */
+  skipZestimate?: boolean;
+  /** Skip the HUD FMR provider. */
+  skipHudFmr?: boolean;
   /** Override the comp count for the live call. */
   compCount?: number;
 };
@@ -195,6 +201,24 @@ async function persist(property: Property, estimate: RentalEstimate): Promise<vo
   }
 }
 
+async function tryZestimate(property: Property): Promise<RentalEstimate | null> {
+  try {
+    const propertyRow = await prisma.property.findUnique({
+      where: { sourceUrl: property.sourceUrl },
+      select: { rawListing: true },
+    });
+    if (!propertyRow?.rawListing) return null;
+    const zestimate = extractRentZestimateFromNextData(propertyRow.rawListing);
+    if (zestimate === null) return null;
+    return buildEstimate("ZILLOW_ZESTIMATE", zestimate, [], property);
+  } catch (error) {
+    logger.warn("rental.zestimate_lookup_failed", {
+      message: error instanceof Error ? error.message : String(error),
+    });
+    return null;
+  }
+}
+
 async function tryFixture(property: Property): Promise<RentalEstimate | null> {
   const fixtures = await loadFixtures();
   const key = fixtureKey(property);
@@ -250,7 +274,23 @@ export async function estimateRental(
     }
   }
 
-  // 2. Live
+  // 2. Zillow rent Zestimate — free and accurate, but only available
+  // when the listing parser previously cached the raw __NEXT_DATA__
+  // payload on the Property row. No live fetch here; we never re-hit
+  // Zillow from the rental service.
+  if (!options.skipZestimate) {
+    const zestimate = await tryZestimate(property);
+    if (zestimate) {
+      if (!options.skipPersist) await persist(property, zestimate);
+      logger.info("rental.zestimate_hit", {
+        sourceUrl: property.sourceUrl,
+        rent: zestimate.estimatedRent,
+      });
+      return { ok: true, estimate: zestimate, durationMs: ms() };
+    }
+  }
+
+  // 3. RentCast (paid; auth required)
   if (!options.skipLive) {
     const result: RentEstimateResult = await getRentEstimate({
       address: `${property.address}, ${property.city}, ${property.state} ${property.zipCode}`,
@@ -285,7 +325,24 @@ export async function estimateRental(
     });
   }
 
-  // 3. Fixture / market average
+  // 4. HUD Small Area Fair Market Rent — free, ~35k US zip codes,
+  // updated annually. Treat as a baseline / sanity-check tier.
+  if (!options.skipHudFmr) {
+    const hud = getHudFairMarketRent(property.zipCode, property.bedrooms);
+    if (hud) {
+      const hudEstimate = buildEstimate("HUD_FMR", hud.monthlyRent, [], property);
+      if (!options.skipPersist) await persist(property, hudEstimate);
+      logger.info("rental.hud_fmr_hit", {
+        sourceUrl: property.sourceUrl,
+        rent: hud.monthlyRent,
+        bedroomBucket: hud.bedroomBucket,
+        year: hud.year,
+      });
+      return { ok: true, estimate: hudEstimate, durationMs: ms() };
+    }
+  }
+
+  // 5. Fixture / market average
   const fallback = await tryFixture(property);
   if (fallback) {
     if (!options.skipPersist) await persist(property, fallback);
@@ -296,7 +353,8 @@ export async function estimateRental(
   return {
     ok: false,
     reason: "no_estimate_available",
-    message: "No rental estimate could be produced (cache, RentCast, fixtures all empty)",
+    message:
+      "No rental estimate could be produced (cache, Zestimate, RentCast, HUD FMR, fixtures all empty)",
   };
 }
 

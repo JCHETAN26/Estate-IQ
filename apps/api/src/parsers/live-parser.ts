@@ -258,6 +258,12 @@ export const liveParser: ListingParser = {
     // Re-export for tests
     void PropertyTypeSchema;
 
-    return { ok: true, source: "live", property: parsed.data, durationMs: ms() };
+    return {
+      ok: true,
+      source: "live",
+      property: parsed.data,
+      durationMs: ms(),
+      rawListing: nextData,
+    };
   },
 };
