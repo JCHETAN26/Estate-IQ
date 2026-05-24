@@ -1,8 +1,9 @@
 /**
  * @estate-iq/analysis-engine
  *
- * Pure financial underwriting logic: mortgage, rental, Airbnb, scoring.
- * Implementations land in Phase 2.
+ * Pure financial underwriting logic. No I/O, no Prisma, no fetch — every
+ * function is deterministic given its inputs. The MCP tools wrap these
+ * functions and add validation + persistence.
  */
 
 import { SHARED_PACKAGE_NAME } from "@estate-iq/shared";
@@ -13,3 +14,14 @@ export const ANALYSIS_ENGINE_PACKAGE_NAME = "@estate-iq/analysis-engine" as cons
 export function describeStack(): string {
   return `${ANALYSIS_ENGINE_PACKAGE_NAME} depends on ${SHARED_PACKAGE_NAME}`;
 }
+
+export {
+  calculateMortgage,
+  monthlyAmortizedPayment,
+  type MortgageInputs,
+  type MortgageBreakdown,
+} from "./mortgage.js";
+
+export { calculateExpenses, type ExpenseInputs, type ExpenseBreakdown } from "./expenses.js";
+
+export { calculateCashFlow, type CashFlowInputs, type CashFlowResult } from "./cashflow.js";
