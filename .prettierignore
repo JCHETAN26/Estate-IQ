@@ -8,6 +8,7 @@ pnpm-lock.yaml
 .pnpm-store
 .next/
 .husky/_/
+apps/api/prisma/migrations
 
 # user-owned docs (do not reformat)
 build-plan.md

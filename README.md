@@ -2,7 +2,7 @@
 
 AI-powered real estate underwriting platform. Paste a Zillow URL, get mortgage analysis, rental cash flow projections, cap rate analysis, Airbnb profitability estimates, investment risk scoring, and an AI-generated investment memo.
 
-> Build status: Phase 0 complete (monorepo scaffold + CI + review standards). See [`build-plan.md`](./build-plan.md) for the sequenced roadmap.
+> Build status: Phase 1 in progress. Task 1.1 (PostgreSQL + Prisma) complete. See [`build-plan.md`](./build-plan.md) for the sequenced roadmap.
 
 ## Stack
 
@@ -41,6 +41,9 @@ infra/
 
 ```bash
 pnpm install
+pnpm db:up        # starts Postgres in Docker on :5434
+pnpm --filter @estate-iq/api prisma:migrate
+pnpm --filter @estate-iq/api prisma:seed
 pnpm dev          # runs every app's dev script in parallel
 pnpm typecheck
 pnpm lint
@@ -48,10 +51,17 @@ pnpm build
 pnpm test
 ```
 
-Phase 0 ships a health-check API on port 4000 and a placeholder Next.js page on port 3000 to prove workspace wiring.
+Phase 1 ships a Postgres-backed health-check API on port 4000 and a placeholder Next.js page on port 3000.
 
 ```bash
-curl http://localhost:4000/health
+curl http://localhost:4000/health        # liveness
+curl http://localhost:4000/health/db     # DB connectivity + row counts
+```
+
+Inspect data with:
+
+```bash
+pnpm --filter @estate-iq/api prisma:studio
 ```
 
 ## Environment

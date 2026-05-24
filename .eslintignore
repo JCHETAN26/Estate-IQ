@@ -6,3 +6,5 @@ build
 coverage
 next-env.d.ts
 apps/web/next-env.d.ts
+apps/api/prisma/migrations
+

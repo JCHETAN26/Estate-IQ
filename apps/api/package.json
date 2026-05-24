@@ -10,15 +10,27 @@
     "lint": "eslint \"src/**/*.ts\"",
     "typecheck": "tsc --noEmit",
     "test": "echo \"no tests yet\" && exit 0",
-    "clean": "rm -rf dist .turbo"
+    "clean": "rm -rf dist .turbo",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:migrate:deploy": "prisma migrate deploy",
+    "prisma:studio": "prisma studio",
+    "prisma:seed": "tsx prisma/seed.ts",
+    "prisma:reset": "prisma migrate reset --force"
   },
   "dependencies": {
     "@estate-iq/analysis-engine": "workspace:*",
-    "@estate-iq/shared": "workspace:*"
+    "@estate-iq/shared": "workspace:*",
+    "@prisma/client": "^5.22.0",
+    "dotenv": "^17.4.2"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
+    "prisma": "^5.22.0",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   }
 }
