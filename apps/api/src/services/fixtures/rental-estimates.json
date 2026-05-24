@@ -1,0 +1,118 @@
+{
+  "estimates": [
+    {
+      "subjectAddress": "123 Sample St, Austin, TX 78701",
+      "rent": 2900,
+      "rentLow": 2700,
+      "rentHigh": 3100,
+      "comparables": [
+        {
+          "address": "210 Sample Ct",
+          "city": "Austin",
+          "state": "TX",
+          "zipCode": "78701",
+          "propertyType": "Single Family",
+          "bedrooms": 3,
+          "bathrooms": 2.5,
+          "squareFootage": 1800,
+          "yearBuilt": 2009,
+          "monthlyRent": 2950,
+          "distanceMiles": 0.4,
+          "daysOld": 45,
+          "correlation": 0.97
+        },
+        {
+          "address": "55 Oakwood Ln",
+          "city": "Austin",
+          "state": "TX",
+          "zipCode": "78701",
+          "propertyType": "Single Family",
+          "bedrooms": 3,
+          "bathrooms": 2,
+          "squareFootage": 1750,
+          "yearBuilt": 2005,
+          "monthlyRent": 2800,
+          "distanceMiles": 0.6,
+          "daysOld": 60,
+          "correlation": 0.94
+        },
+        {
+          "address": "412 Maple Ave",
+          "city": "Austin",
+          "state": "TX",
+          "zipCode": "78701",
+          "propertyType": "Single Family",
+          "bedrooms": 4,
+          "bathrooms": 2.5,
+          "squareFootage": 1950,
+          "yearBuilt": 2011,
+          "monthlyRent": 3050,
+          "distanceMiles": 0.8,
+          "daysOld": 30,
+          "correlation": 0.92
+        }
+      ]
+    },
+    {
+      "subjectAddress": "4521 Oak Ave, Austin, TX 78704",
+      "rent": 3650,
+      "rentLow": 3400,
+      "rentHigh": 3900,
+      "comparables": [
+        {
+          "address": "4400 Oak Ave",
+          "city": "Austin",
+          "state": "TX",
+          "zipCode": "78704",
+          "propertyType": "Single Family",
+          "bedrooms": 4,
+          "bathrooms": 3,
+          "squareFootage": 2300,
+          "yearBuilt": 1995,
+          "monthlyRent": 3700,
+          "distanceMiles": 0.2,
+          "daysOld": 15,
+          "correlation": 0.96
+        },
+        {
+          "address": "300 Cherry Ln",
+          "city": "Austin",
+          "state": "TX",
+          "zipCode": "78704",
+          "propertyType": "Single Family",
+          "bedrooms": 4,
+          "bathrooms": 2.5,
+          "squareFootage": 2200,
+          "yearBuilt": 1998,
+          "monthlyRent": 3550,
+          "distanceMiles": 0.5,
+          "daysOld": 50,
+          "correlation": 0.93
+        }
+      ]
+    }
+  ],
+  "marketAverages": {
+    "TX_78701": { "medianRent": 2850, "medianPricePerSqft": 285 },
+    "TX_78704": { "medianRent": 3500, "medianPricePerSqft": 320 },
+    "TX_78664": { "medianRent": 2200, "medianPricePerSqft": 230 },
+    "TX_78734": { "medianRent": 4100, "medianPricePerSqft": 295 },
+    "TX_78613": { "medianRent": 2450, "medianPricePerSqft": 240 },
+    "TX_78660": { "medianRent": 2100, "medianPricePerSqft": 215 },
+    "TX_78610": { "medianRent": 2300, "medianPricePerSqft": 220 },
+    "TX_78745": { "medianRent": 2750, "medianPricePerSqft": 275 },
+    "TX_78702": { "medianRent": 1850, "medianPricePerSqft": 350 },
+    "TX_78212": { "medianRent": 2100, "medianPricePerSqft": 195 },
+    "TX_78230": { "medianRent": 1950, "medianPricePerSqft": 175 },
+    "TX_78258": { "medianRent": 2400, "medianPricePerSqft": 215 },
+    "TX_77006": { "medianRent": 2950, "medianPricePerSqft": 305 },
+    "TX_77027": { "medianRent": 2850, "medianPricePerSqft": 340 },
+    "TX_77008": { "medianRent": 3200, "medianPricePerSqft": 295 },
+    "TX_75201": { "medianRent": 2700, "medianPricePerSqft": 320 },
+    "TX_75230": { "medianRent": 4500, "medianPricePerSqft": 365 },
+    "TX_75024": { "medianRent": 2750, "medianPricePerSqft": 235 },
+    "TX_75034": { "medianRent": 3000, "medianPricePerSqft": 235 },
+    "TX_78641": { "medianRent": 2150, "medianPricePerSqft": 225 },
+    "TX_78620": { "medianRent": 3500, "medianPricePerSqft": 270 }
+  }
+}

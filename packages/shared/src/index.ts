@@ -15,4 +15,5 @@ export type PackageInfo = {
 // Domain schemas
 export * from "./schemas/property.js";
 export * from "./schemas/financing.js";
+export * from "./schemas/rental.js";
 export * from "./schemas/mcp.js";

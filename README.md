@@ -2,7 +2,7 @@
 
 AI-powered real estate underwriting platform. Paste a Zillow URL, get mortgage analysis, rental cash flow projections, cap rate analysis, Airbnb profitability estimates, investment risk scoring, and an AI-generated investment memo.
 
-> Build status: Phase 2 in progress. Phase 1 complete (DB + MCP server + Zillow parsing). Phase 2 / Task 2.1 (mortgage + cash flow engine) complete. See [`build-plan.md`](./build-plan.md) for the sequenced roadmap.
+> Build status: Phase 2 in progress. Phase 1 complete (DB + MCP + Zillow parsing). Phase 2 / Tasks 2.1 (mortgage + cash flow) and 2.2 (rental estimation) complete. See [`build-plan.md`](./build-plan.md) for the sequenced roadmap.
 
 ## Stack
 
