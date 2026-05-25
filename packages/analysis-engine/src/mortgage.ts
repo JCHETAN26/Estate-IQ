@@ -23,6 +23,8 @@
 const PMI_THRESHOLD_LTV = 0.8; // PMI required when LTV > 80%
 const PMI_ANNUAL_RATE = 0.005; // 0.5% / year of loan principal
 
+import { clamp, round2 } from "./numeric.js";
+
 export type MortgageInputs = {
   /** Property purchase price. */
   listPrice: number;
@@ -75,7 +77,11 @@ export function calculateMortgage(inputs: MortgageInputs): MortgageBreakdown {
 
   const pmiMonthly = ltv > PMI_THRESHOLD_LTV ? round2((loanAmount * PMI_ANNUAL_RATE) / 12) : 0;
 
-  const totalInterestOverTerm = round2(monthlyPrincipalAndInterest * monthlyPayments - loanAmount);
+  // Math.max guards against tiny rounding drift producing a negative
+  // total when monthlyPrincipalAndInterest gets rounded down.
+  const totalInterestOverTerm = round2(
+    Math.max(0, monthlyPrincipalAndInterest * monthlyPayments - loanAmount),
+  );
 
   return {
     loanAmount,
@@ -99,13 +105,4 @@ export function monthlyAmortizedPayment(
   if (monthlyRate === 0) return principal / numberOfPayments;
   const factor = Math.pow(1 + monthlyRate, numberOfPayments);
   return (principal * (monthlyRate * factor)) / (factor - 1);
-}
-
-function clamp(value: number, min: number, max: number): number {
-  if (Number.isNaN(value)) return min;
-  return Math.min(Math.max(value, min), max);
-}
-
-function round2(value: number): number {
-  return Math.round(value * 100) / 100;
 }

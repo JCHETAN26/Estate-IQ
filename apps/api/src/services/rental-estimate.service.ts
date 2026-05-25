@@ -15,6 +15,7 @@
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
+import { round2 } from "@estate-iq/analysis-engine";
 import {
   type ComparableRental,
   type Property,
@@ -356,8 +357,4 @@ export async function estimateRental(
     message:
       "No rental estimate could be produced (cache, Zestimate, RentCast, HUD FMR, fixtures all empty)",
   };
-}
-
-function round2(value: number): number {
-  return Math.round(value * 100) / 100;
 }

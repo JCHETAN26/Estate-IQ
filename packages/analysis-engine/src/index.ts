@@ -39,3 +39,5 @@ export {
   type InvestmentScoreResult,
   type FactorScore,
 } from "./scoring.js";
+
+export { clamp, clampPct, round1, round2, round3 } from "./numeric.js";

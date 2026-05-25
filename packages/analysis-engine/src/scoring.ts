@@ -19,6 +19,8 @@
  * Pure functions, no I/O.
  */
 
+import { round1 } from "./numeric.js";
+
 const FACTOR_WEIGHTS = {
   cashFlow: 30,
   rentToPrice: 25,
@@ -440,8 +442,4 @@ function rate(score: number): InvestmentScoreResult["rating"] {
   if (score >= 55) return "Moderate";
   if (score >= 40) return "Weak";
   return "Poor";
-}
-
-function round1(value: number): number {
-  return Math.round(value * 10) / 10;
 }

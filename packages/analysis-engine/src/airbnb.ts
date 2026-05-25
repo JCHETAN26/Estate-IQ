@@ -25,6 +25,8 @@
  * Pure functions, no I/O.
  */
 
+import { clamp, round1, round2, round3 } from "./numeric.js";
+
 export type AirbnbInputs = {
   /** Average daily rate in dollars. */
   averageDailyRate: number;
@@ -285,21 +287,4 @@ function evaluateRisk(inputs: RiskInputs): {
   else level = "High";
 
   return { level, factors };
-}
-
-function clamp(value: number, min: number, max: number): number {
-  if (Number.isNaN(value)) return min;
-  return Math.min(Math.max(value, min), max);
-}
-
-function round1(value: number): number {
-  return Math.round(value * 10) / 10;
-}
-
-function round2(value: number): number {
-  return Math.round(value * 100) / 100;
-}
-
-function round3(value: number): number {
-  return Math.round(value * 1000) / 1000;
 }

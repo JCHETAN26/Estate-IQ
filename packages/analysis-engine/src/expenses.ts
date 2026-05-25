@@ -21,6 +21,7 @@
  */
 
 import type { MortgageBreakdown } from "./mortgage.js";
+import { clampPct, round2 } from "./numeric.js";
 
 export type ExpenseInputs = {
   mortgage: MortgageBreakdown;
@@ -95,13 +96,4 @@ export function calculateExpenses(inputs: ExpenseInputs): ExpenseBreakdown {
     monthlyOperatingTotal,
     monthlyExpenseTotal,
   };
-}
-
-function clampPct(value: number): number {
-  if (Number.isNaN(value)) return 0;
-  return Math.min(Math.max(value, 0), 100);
-}
-
-function round2(value: number): number {
-  return Math.round(value * 100) / 100;
 }
