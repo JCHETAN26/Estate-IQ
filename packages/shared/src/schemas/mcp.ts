@@ -178,6 +178,51 @@ export const AnalyzeAirbnbOutputSchema = z.discriminatedUnion("status", [
 export type AnalyzeAirbnbOutput = z.infer<typeof AnalyzeAirbnbOutputSchema>;
 
 // ---------------------------------------------------------------------------
+// score_investment
+// ---------------------------------------------------------------------------
+
+export const ScoreInvestmentInputSchema = z.object({
+  listPrice: z.number().positive(),
+  cashOnCashPct: z.number().optional(),
+  rentToPricePct: z.number().optional(),
+  propertyTaxAnnual: z.number().nonnegative().optional(),
+  squareFeet: z.number().positive().optional(),
+  yearBuilt: z.number().int().min(1800).max(2100).optional(),
+  city: z.string().min(1).optional(),
+  state: z
+    .string()
+    .length(2)
+    .regex(/^[A-Z]{2}$/)
+    .optional(),
+  medianPricePerSqft: z.number().positive().optional(),
+});
+export type ScoreInvestmentInput = z.infer<typeof ScoreInvestmentInputSchema>;
+
+const FactorScoreSchema = z.object({
+  score: z.number().min(0).max(100),
+  weight: z.number().min(0).max(100),
+  rationale: z.string(),
+});
+
+export const ScoreInvestmentOutputSchema = z.discriminatedUnion("status", [
+  z.object({
+    status: z.literal("ok"),
+    score: z.number().min(0).max(100),
+    rating: z.enum(["Excellent", "Strong", "Moderate", "Weak", "Poor"]),
+    factors: z.object({
+      cashFlow: FactorScoreSchema,
+      rentToPrice: FactorScoreSchema,
+      taxBurden: FactorScoreSchema,
+      neighborhoodGrowth: FactorScoreSchema,
+      appreciation: FactorScoreSchema,
+    }),
+    rationale: z.array(z.string()),
+  }),
+  NotImplementedSchema,
+]);
+export type ScoreInvestmentOutput = z.infer<typeof ScoreInvestmentOutputSchema>;
+
+// ---------------------------------------------------------------------------
 // generate_investment_summary
 // ---------------------------------------------------------------------------
 
@@ -216,6 +261,7 @@ export const MCP_TOOL_NAMES = [
   "calculate_cash_flow",
   "estimate_rental",
   "analyze_airbnb",
+  "score_investment",
   "generate_investment_summary",
 ] as const;
 
