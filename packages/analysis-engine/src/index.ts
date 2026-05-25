@@ -32,3 +32,10 @@ export {
   type AirbnbAnalysis,
   type StrRiskLevel,
 } from "./airbnb.js";
+
+export {
+  calculateInvestmentScore,
+  type InvestmentScoreInputs,
+  type InvestmentScoreResult,
+  type FactorScore,
+} from "./scoring.js";
