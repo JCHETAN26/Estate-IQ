@@ -9,6 +9,7 @@
  * Pure functions, no I/O.
  */
 
+import { round2, round3 } from "@estate-iq/analysis-engine";
 import type { YieldMetrics } from "@estate-iq/shared";
 
 export function computeYieldMetrics(monthlyRent: number, listPrice: number): YieldMetrics {
@@ -21,12 +22,4 @@ export function computeYieldMetrics(monthlyRent: number, listPrice: number): Yie
   const meetsOnePercentRule = safePrice > 0 && safeRent / safePrice >= 0.01;
 
   return { rentToPricePct, grossRentMultiplier, meetsOnePercentRule };
-}
-
-function round2(value: number): number {
-  return Math.round(value * 100) / 100;
-}
-
-function round3(value: number): number {
-  return Math.round(value * 1000) / 1000;
 }

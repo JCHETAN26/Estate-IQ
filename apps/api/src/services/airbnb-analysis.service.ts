@@ -12,7 +12,7 @@
  */
 
 import type { AirbnbAnalysis, AirbnbInputs } from "@estate-iq/analysis-engine";
-import { analyzeAirbnb } from "@estate-iq/analysis-engine";
+import { analyzeAirbnb, round2 } from "@estate-iq/analysis-engine";
 import type { Property } from "@estate-iq/shared";
 import { getStrMarketData } from "../integrations/airdna/client.js";
 import { logger } from "../mcp/logger.js";
@@ -165,8 +165,4 @@ function pickOccupancy(multiplier: number): number {
     if (multiplier >= tier.minMultiplier) return tier.occupancyPct;
   }
   return 55;
-}
-
-function round2(value: number): number {
-  return Math.round(value * 100) / 100;
 }

@@ -5,7 +5,7 @@
  * tax/insurance/HOA line items so callers get a single PITI figure.
  */
 
-import { calculateExpenses, calculateMortgage } from "@estate-iq/analysis-engine";
+import { calculateExpenses, calculateMortgage, round3 } from "@estate-iq/analysis-engine";
 import { EstimateMortgageInputSchema, EstimateMortgageOutputSchema } from "@estate-iq/shared";
 import { defineTool } from "../registry.js";
 
@@ -49,7 +49,3 @@ export const estimateMortgageTool = defineTool({
     };
   },
 });
-
-function round3(value: number): number {
-  return Math.round(value * 1000) / 1000;
-}

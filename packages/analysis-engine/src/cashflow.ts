@@ -17,6 +17,7 @@
 
 import { calculateExpenses, type ExpenseBreakdown } from "./expenses.js";
 import { calculateMortgage, type MortgageBreakdown, type MortgageInputs } from "./mortgage.js";
+import { clampPct, round2, round3 } from "./numeric.js";
 
 const DEFAULT_CLOSING_COSTS_PCT = 3.0; // 3% of list price
 
@@ -126,17 +127,4 @@ export function calculateCashFlow(inputs: CashFlowInputs): CashFlowResult {
     capRatePct,
     cashOnCashPct,
   };
-}
-
-function clampPct(value: number): number {
-  if (Number.isNaN(value)) return 0;
-  return Math.min(Math.max(value, 0), 100);
-}
-
-function round2(value: number): number {
-  return Math.round(value * 100) / 100;
-}
-
-function round3(value: number): number {
-  return Math.round(value * 1000) / 1000;
 }
