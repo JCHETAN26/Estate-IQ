@@ -16,4 +16,5 @@ export type PackageInfo = {
 export * from "./schemas/property.js";
 export * from "./schemas/financing.js";
 export * from "./schemas/rental.js";
+export * from "./schemas/chat.js";
 export * from "./schemas/mcp.js";

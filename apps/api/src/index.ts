@@ -18,6 +18,7 @@ import { describeStack } from "@estate-iq/analysis-engine";
 import { SHARED_PACKAGE_NAME } from "@estate-iq/shared";
 import { prisma } from "./db/client.js";
 import { handleMcpHttpRequest } from "./mcp/transport/http.js";
+import { handleChatRequest } from "./http/chat.js";
 import { logger } from "./mcp/logger.js";
 // Importing the mcp barrel triggers tool self-registration.
 import "./mcp/index.js";
@@ -66,6 +67,7 @@ const server = createServer(async (req, res) => {
   }
 
   if (await handleMcpHttpRequest(req, res)) return;
+  if (await handleChatRequest(req, res)) return;
 
   res.writeHead(404, { "Content-Type": "application/json" });
   res.end(JSON.stringify({ error: "Not Found" }));
